@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Tracker — NEOWatch</title>
+    <meta name="description" content="Browse, search and filter live near-Earth asteroid data from NASA." />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+      <div class="container container-narrow">
+        <a class="navbar-brand" href="index.html">☄️ NEOWatch</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainNav"
+          aria-controls="mainNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="tracker.html">Live Tracker</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="notable.html">Notable Asteroids</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container container-narrow py-4">
+      <header class="mb-4">
+        <h1 class="section-title">Live Asteroid Tracker</h1>
+        <p class="section-sub m-0">
+          Pick a date window (NASA allows up to 7 days), then search, filter and sort
+          the close approaches.
+        </p>
+      </header>
+
+      <!-- Filter / search / sort controls -->
+      <form id="filters" class="filters">
+        <div class="row g-3 align-items-end">
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="startDate">From</label>
+            <input type="date" id="startDate" class="form-control" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="endDate">To</label>
+            <input type="date" id="endDate" class="form-control" />
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label" for="sortBy">Sort by</label>
+            <select id="sortBy" class="form-select">
+              <option value="distance:asc">Closest first</option>
+              <option value="distance:desc">Farthest first</option>
+              <option value="size:desc">Largest first</option>
+              <option value="size:asc">Smallest first</option>
+              <option value="speed:desc">Fastest first</option>
+              <option value="danger:desc">Highest danger index</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-3">
+            <button type="submit" class="btn btn-info w-100">Load feed</button>
+          </div>
+          <div class="col-12 col-md-8">
+            <label class="form-label" for="search">Search by name</label>
+            <input
+              type="search"
+              id="search"
+              class="form-control"
+              placeholder="e.g. Apophis, or 2024"
+            />
+          </div>
+          <div class="col-12 col-md-4 d-flex align-items-end">
+            <div class="form-check form-switch pb-2">
+              <input class="form-check-input" type="checkbox" id="hazardOnly" />
+              <label class="form-check-label" for="hazardOnly">Potentially hazardous only</label>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 m-0">Results</h2>
+        <span id="resultCount" class="text-secondary"></span>
+      </div>
+
+      <div id="grid" class="card-grid"></div>
+      <nav id="pager" class="pager" aria-label="Pagination"></nav>
+    </main>
+
+    <!-- Detail modal (Bootstrap) populated from the lookup endpoint -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5">Asteroid</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <p class="m-0">
+        Built by Yorgo Hassabou · Data courtesy of
+        <a href="https://api.nasa.gov" target="_blank" rel="noopener">NASA Open APIs</a>
+      </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/tracker.js"></script>
+  </body>
+</html>

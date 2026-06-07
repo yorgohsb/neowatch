@@ -1,0 +1,11 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Dependencies (none required, but just in case)
+node_modules/
+
+# NOTE: js/config.js is intentionally committed (with DEMO_KEY) so the live
+# deployment works. If you swap in a personal NASA key, that's fine — NASA keys
+# are free and rate-limited, not secret.

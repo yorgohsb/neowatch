@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEOWatch — Near-Earth Object Tracker</title>
+    <meta
+      name="description"
+      content="Track asteroids making close approaches to Earth using live NASA data."
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Consistent navigation bar (shared across all pages) -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+      <div class="container container-narrow">
+        <a class="navbar-brand" href="index.html">☄️ NEOWatch</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainNav"
+          aria-controls="mainNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="tracker.html">Live Tracker</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="notable.html">Notable Asteroids</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container container-narrow">
+      <!-- Hero -->
+      <header class="hero">
+        <h1>Watch the skies in real time</h1>
+        <p>
+          NEOWatch pulls live data from NASA's Near-Earth Object Web Service to show
+          which asteroids are sweeping past Earth — how big, how fast, and how close.
+        </p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <a href="tracker.html" class="btn btn-info btn-lg">Open Live Tracker</a>
+          <a href="notable.html" class="btn btn-outline-light btn-lg">Notable Asteroids</a>
+        </div>
+      </header>
+
+      <!-- Live preview: today's closest approaches -->
+      <section class="section">
+        <h2 class="section-title">Closest approaches today</h2>
+        <p class="section-sub">A live snapshot from NASA — hover a card for its danger index.</p>
+        <div id="featuredGrid" class="card-grid"></div>
+      </section>
+
+      <!-- Explainer (Bootstrap columns + Flexbox cards) -->
+      <section class="section">
+        <h2 class="section-title">What you're looking at</h2>
+        <p class="section-sub">A quick primer on near-Earth objects.</p>
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="feature">
+              <span class="feature__icon">🪨</span>
+              <h3 class="h6 m-0">What is a NEO?</h3>
+              <p class="text-secondary m-0">
+                A near-Earth object is an asteroid or comet whose orbit brings it close
+                to Earth's neighbourhood around the Sun.
+              </p>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="feature">
+              <span class="feature__icon">⚠️</span>
+              <h3 class="h6 m-0">"Potentially hazardous"</h3>
+              <p class="text-secondary m-0">
+                A formal NASA label for larger objects whose orbits pass especially
+                close to Earth — not a prediction of impact.
+              </p>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="feature">
+              <span class="feature__icon">🛰️</span>
+              <h3 class="h6 m-0">Planetary defense</h3>
+              <p class="text-secondary m-0">
+                Missions like DART prove we can nudge an asteroid's orbit — making
+                tracking the first line of defense.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="m-0">
+        Built by Yorgo Hassabou · Data courtesy of
+        <a href="https://api.nasa.gov" target="_blank" rel="noopener">NASA Open APIs</a>
+      </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/home.js"></script>
+  </body>
+</html>
