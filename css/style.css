@@ -5,14 +5,14 @@
    ============================================================================= */
 
 :root {
-  --bg: #05060d;
-  --surface: rgba(255, 255, 255, 0.03);
+  --bg: #0a0613;
+  --surface: rgba(160, 120, 255, 0.05);
   --text: #e8ecf5;
-  --muted: #9aa6c2;
-  --accent: #5ec8ff;
-  --accent-dim: rgba(94, 200, 255, 0.4);
+  --muted: #a9a2c8;
+  --accent: #b08cff;
+  --accent-dim: rgba(176, 140, 255, 0.4);
   --danger: #ff5a5a;
-  --line: rgba(120, 150, 220, 0.15);
+  --line: rgba(150, 120, 230, 0.18);
 }
 
 * {
@@ -24,24 +24,65 @@ body {
   min-height: 100vh;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at 50% -20%, #1a2240 0%, #0a0e1a 55%, #05060d 100%) fixed;
+  /* Purple "galaxy" backdrop: a deep base with several soft nebula glows
+     (violet, blue, magenta, indigo) pooled around the edges. The centre stays
+     darker so text and cards keep their contrast. */
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 55% at 12% 8%, rgba(124, 58, 237, 0.32), transparent 60%),
+    radial-gradient(ellipse 65% 55% at 90% 16%, rgba(56, 100, 230, 0.24), transparent 60%),
+    radial-gradient(ellipse 85% 65% at 82% 92%, rgba(192, 38, 211, 0.22), transparent 60%),
+    radial-gradient(ellipse 80% 65% at 18% 95%, rgba(88, 60, 210, 0.24), transparent 60%),
+    radial-gradient(circle at 50% 45%, rgba(36, 18, 66, 0.45), transparent 72%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
-/* A subtle CSS-only starfield layered behind everything. */
-body::before {
+/* CSS-only starfield: two layered fields of dots give a sense of depth, with a
+   gentle twinkle (disabled under prefers-reduced-motion further down). */
+body::before,
+body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.6;
+}
+
+/* Dense layer of small, faint stars */
+body::before {
+  opacity: 0.7;
   background-image:
     radial-gradient(1px 1px at 20% 30%, #fff, transparent),
     radial-gradient(1px 1px at 70% 60%, #cdd, transparent),
     radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent),
     radial-gradient(1px 1px at 85% 22%, #fff, transparent),
     radial-gradient(1px 1px at 10% 70%, #aac, transparent),
-    radial-gradient(1.5px 1.5px at 60% 12%, #fff, transparent);
+    radial-gradient(1.5px 1.5px at 60% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 33% 50%, #fff, transparent),
+    radial-gradient(1px 1px at 50% 92%, #cce, transparent),
+    radial-gradient(1px 1px at 92% 75%, #fff, transparent),
+    radial-gradient(1px 1px at 5% 45%, #fff, transparent),
+    radial-gradient(1px 1px at 78% 40%, #ddf, transparent),
+    radial-gradient(1px 1px at 28% 15%, #fff, transparent);
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+
+/* Sparser layer of larger, brighter stars, twinkling at a different pace */
+body::after {
+  opacity: 0.5;
+  background-image:
+    radial-gradient(2px 2px at 12% 22%, #fff, transparent),
+    radial-gradient(2px 2px at 65% 35%, #e7d9ff, transparent),
+    radial-gradient(2.5px 2.5px at 88% 65%, #fff, transparent),
+    radial-gradient(2px 2px at 45% 68%, #d9e6ff, transparent),
+    radial-gradient(2px 2px at 30% 88%, #fff, transparent);
+  animation: twinkle 9s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.3; }
+  to   { opacity: 0.85; }
 }
 
 a {
@@ -52,9 +93,24 @@ a {
   max-width: 1080px;
 }
 
+/* Violet accent buttons — Bootstrap's .btn-info recoloured via its CSS vars so
+   the primary call-to-action buttons match the theme without changing markup. */
+.btn-info {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #7c3aed;
+  --bs-btn-border-color: #7c3aed;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #6d28d9;
+  --bs-btn-hover-border-color: #6d28d9;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #6d28d9;
+  --bs-btn-active-border-color: #5b21b6;
+  --bs-btn-focus-shadow-rgb: 124, 58, 237;
+}
+
 /* ----------------------------------------------------------------- Navbar -- */
 .navbar {
-  background: rgba(8, 12, 24, 0.8);
+  background: rgba(13, 8, 26, 0.8);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -137,7 +193,7 @@ a {
   flex-direction: column;
   gap: 0.75rem;
   padding: 1.25rem;
-  background: linear-gradient(160deg, rgba(22, 30, 52, 0.9), rgba(12, 16, 30, 0.95));
+  background: linear-gradient(160deg, rgba(45, 28, 74, 0.78), rgba(20, 13, 38, 0.9));
   border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
