@@ -1,0 +1,387 @@
+/* =============================================================================
+   NEOWatch — hand-written CSS3
+   Bootstrap 5 handles the navbar, form controls, modal and grid utilities;
+   everything below is custom: the space theme and the card-grid + hover effect.
+   ============================================================================= */
+
+:root {
+  --bg: #05060d;
+  --surface: rgba(255, 255, 255, 0.03);
+  --text: #e8ecf5;
+  --muted: #9aa6c2;
+  --accent: #5ec8ff;
+  --accent-dim: rgba(94, 200, 255, 0.4);
+  --danger: #ff5a5a;
+  --line: rgba(120, 150, 220, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 50% -20%, #1a2240 0%, #0a0e1a 55%, #05060d 100%) fixed;
+}
+
+/* A subtle CSS-only starfield layered behind everything. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.6;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 60%, #cdd, transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent),
+    radial-gradient(1px 1px at 85% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 10% 70%, #aac, transparent),
+    radial-gradient(1.5px 1.5px at 60% 12%, #fff, transparent);
+}
+
+a {
+  color: var(--accent);
+}
+
+.container-narrow {
+  max-width: 1080px;
+}
+
+/* ----------------------------------------------------------------- Navbar -- */
+.navbar {
+  background: rgba(8, 12, 24, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.nav-link.active {
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------- Hero -- */
+.hero {
+  text-align: center;
+  padding: 5rem 1rem 3.5rem;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(90deg, #fff, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p {
+  max-width: 640px;
+  margin: 1.25rem auto 2rem;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.section {
+  padding: 1rem 0 3rem;
+}
+.section-title {
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.section-sub {
+  color: var(--muted);
+  margin-bottom: 1.75rem;
+}
+
+/* Small explainer feature cards on the Home page (Bootstrap columns + Flexbox) */
+.feature {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.feature__icon {
+  font-size: 1.75rem;
+}
+
+/* ===========================================================================
+   CUSTOM UI REQUIREMENT (Yorgo Hassabou):
+   "Design a responsive card grid layout with hover effects."
+
+   - .card-grid uses CSS Grid with auto-fill + minmax() so the columns reflow
+     fluidly (1 → 2 → 3 → 4+) at ANY viewport width, with no media queries.
+   - Each .card-neo is a Flexbox column. On hover/focus the card lifts, glows,
+     and slides open a hidden details panel (.card-neo__reveal) holding the
+     animated "danger index" meter.
+   =========================================================================== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.card-neo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: linear-gradient(160deg, rgba(22, 30, 52, 0.9), rgba(12, 16, 30, 0.95));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* The hover/focus lift + glow */
+.card-neo:hover,
+.card-neo:focus-visible {
+  transform: translateY(-6px) scale(1.02);
+  border-color: var(--accent);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--accent-dim);
+  outline: none;
+}
+
+/* Hazardous asteroids get a red identity, intensified on hover */
+.card--hazard {
+  border-color: rgba(255, 90, 90, 0.35);
+}
+.card--hazard:hover,
+.card--hazard:focus-visible {
+  border-color: var(--danger);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 70, 70, 0.25);
+}
+
+.card-neo__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.card-neo__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.card-neo__aka {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.card-neo__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0;
+}
+.card-neo__stats dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.card-neo__stats dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Hidden until hover/focus — the reveal effect */
+.card-neo__reveal {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+.card-neo:hover .card-neo__reveal,
+.card-neo:focus-within .card-neo__reveal {
+  max-height: 220px;
+  opacity: 1;
+  transform: translateY(0);
+}
+.card-neo__reveal--text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Animated danger meter inside the reveal panel */
+.meter-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.meter {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.meter__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #36d399, #fbbd23, #f87272);
+  transition: width 0.8s ease;
+}
+.card-neo:hover .meter__bar,
+.card-neo:focus-within .meter__bar {
+  width: var(--val);
+}
+.card-neo__details {
+  margin-top: 0.6rem;
+}
+
+/* ----------------------------------------------------------------- Badges -- */
+.badge-hazard,
+.badge-cat {
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-hazard {
+  background: rgba(255, 90, 90, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255, 90, 90, 0.4);
+}
+.badge-cat {
+  background: rgba(94, 200, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+}
+
+/* ------------------------------------------------- Filters / tracker bar -- */
+.filters {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* -------------------------------------------------------- Loading / states */
+.card-skel {
+  height: 220px;
+  border-radius: 16px;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.04) 30%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.04) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.grid-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--muted);
+}
+.grid-state__icon {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ------------------------------------------------------------- Pagination -- */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 2rem;
+}
+.page-btn {
+  min-width: 40px;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 150, 220, 0.2);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.page-btn.is-active {
+  background: var(--accent);
+  color: #04121e;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ Modal -- */
+.modal-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.modal-stats dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.modal-stats dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- Footer -- */
+.site-footer {
+  margin-top: 4rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+/* ------------------------------------------------------------ Responsive -- */
+@media (max-width: 480px) {
+  .hero {
+    padding: 3.5rem 1rem 2.5rem;
+  }
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
