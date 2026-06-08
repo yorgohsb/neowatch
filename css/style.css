@@ -177,14 +177,17 @@ a {
 
    - .card-grid uses CSS Grid with auto-fill + minmax() so the columns reflow
      fluidly (1 → 2 → 3 → 4+) at ANY viewport width, with no media queries.
-   - Each .card-neo is a Flexbox column. On hover/focus the card lifts, glows,
-     and slides open a hidden details panel (.card-neo__reveal) holding the
-     animated "danger index" meter.
+   - Each card is a Flexbox column. On hover/focus it glows and slides open a
+     hidden panel (.card-neo__reveal) with the animated "danger index" meter.
+   - The tracker/home cards are 3D flip cards: "View details" rotates the card
+     horizontally (.flip / .flip__inner / .flip__front / .flip__back) to show
+     the full data set on the back face.
    =========================================================================== */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+  align-items: start; /* let each card size to its own content (no clipping) */
 }
 
 .card-neo {
@@ -197,17 +200,22 @@ a {
   border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
-  cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-/* The hover/focus lift + glow */
+/* Hover/focus glow — applies to standalone cards and to flip faces */
 .card-neo:hover,
 .card-neo:focus-visible {
-  transform: translateY(-6px) scale(1.02);
   border-color: var(--accent);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--accent-dim);
   outline: none;
+}
+
+/* The lift applies only to standalone cards (Notable page). Flip cards are
+   lifted via their .flip wrapper so the 3D transform isn't disturbed. */
+.card-neo:not(.flip__face):hover,
+.card-neo:not(.flip__face):focus-visible {
+  transform: translateY(-6px) scale(1.02);
 }
 
 /* Hazardous asteroids get a red identity, intensified on hover */
@@ -218,6 +226,61 @@ a {
 .card--hazard:focus-visible {
   border-color: var(--danger);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 70, 70, 0.25);
+}
+
+/* ---- 3D flip card (Live Tracker & Home) -------------------------------- */
+.flip {
+  perspective: 1200px;
+  transition: transform 0.25s ease;
+}
+.flip:hover {
+  transform: translateY(-6px);
+}
+.flip__inner {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  /* The container height is animated by JS (CardGrid) as the visible face
+     changes, so the card stays compact on the front and grows when flipped.
+     Height settles faster than the rotation, so the resize hides behind the
+     edge-on moment and the second half of the flip is pure (smooth) transform. */
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1), height 0.4s ease-out;
+}
+.flip.is-flipped .flip__inner {
+  transform: rotateY(180deg);
+}
+.flip__face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+/* Front stays in normal flow, so the card sizes to it (compact at rest, taller
+   on hover). The back is overlaid and only contributes height when flipped. */
+.flip__front {
+  position: relative;
+}
+.flip__back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* Small round "flip back" button on the back face */
+.flip__close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.flip__close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .card-neo__head {
@@ -302,6 +365,34 @@ a {
 }
 .card-neo__details {
   margin-top: 0.6rem;
+}
+
+/* Back-face orbital data (lazily loaded) sits under a divider */
+.card-neo__stats--orbital {
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--line);
+}
+/* Values fade in once the lookup resolves; the rows are reserved from the
+   start so the card height never changes a second time. */
+.card-neo__stats dd {
+  transition: opacity 0.35s ease;
+}
+.card-neo__stats dd.pending {
+  opacity: 0.4;
+}
+
+/* On touch devices (no hover) the reveal panel is always shown so the meter
+   and the "View details" flip button stay reachable on a phone. */
+@media (hover: none) {
+  .card-neo__reveal {
+    max-height: 260px;
+    opacity: 1;
+    transform: none;
+  }
+  .meter__bar {
+    width: var(--val);
+  }
 }
 
 /* ----------------------------------------------------------------- Badges -- */
@@ -394,23 +485,6 @@ a {
 .page-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
-}
-
-/* ------------------------------------------------------------------ Modal -- */
-.modal-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-.modal-stats dt {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.modal-stats dd {
-  margin: 0;
-  font-weight: 600;
 }
 
 /* ----------------------------------------------------------------- Footer -- */

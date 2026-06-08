@@ -1,14 +1,28 @@
 /**
  * Renders Asteroid cards into a container element and owns the three required
- * UI states: loading (skeletons), error, and empty. Used by both the Home page
- * and the Live Tracker so the card markup stays consistent.
+ * UI states (loading / error / empty).
+ *
+ * Each card is a 3D flip card: the front shows headline stats and a "View
+ * details" button; clicking it flips the card horizontally to reveal the full
+ * data on the back. If an `api` is supplied, the back face also lazily loads
+ * extra orbital data from the lookup endpoint (once per card).
+ *
+ * Used by both the Home page and the Live Tracker.
  */
 export class CardGrid {
-  constructor(container) {
+  #timers = new WeakMap(); // per-card timers that release the animated height
+
+  /**
+   * @param {HTMLElement} container
+   * @param {{ api?: import("./api.js").NeoApi }} [options]
+   */
+  constructor(container, { api = null } = {}) {
     this.container = container;
+    this.api = api;
+    // One delegated listener survives the innerHTML swaps in render().
+    this.container.addEventListener("click", (e) => this.#onClick(e));
   }
 
-  /** Skeleton placeholders shown while the API request is in flight. */
   renderLoading(count = 6) {
     this.container.innerHTML = Array.from({ length: count })
       .map(() => `<div class="card-skel" aria-hidden="true"></div>`)
@@ -37,29 +51,129 @@ export class CardGrid {
     this.container.innerHTML = asteroids.map((a) => this.#card(a)).join("");
   }
 
-  /** Markup for a single asteroid card. The .card-neo__reveal block is hidden
-   *  until hover/focus — see the custom-requirement comment in css/style.css. */
+  /* ------------------------------------------------------------ flip logic -- */
+
+  #onClick(e) {
+    const flipBtn = e.target.closest("[data-action='flip']");
+    if (flipBtn) return this.#setFlipped(flipBtn.closest(".flip"), true);
+    const backBtn = e.target.closest("[data-action='unflip']");
+    if (backBtn) return this.#setFlipped(backBtn.closest(".flip"), false);
+  }
+
+  #setFlipped(flipEl, flipped) {
+    if (!flipEl) return;
+    const inner = flipEl.querySelector(".flip__inner");
+    const front = flipEl.querySelector(".flip__front");
+    const back = flipEl.querySelector(".flip__back");
+
+    clearTimeout(this.#timers.get(flipEl));
+
+    // Lock the current height, then animate to the face we're about to show:
+    // the front sizes to its own (compact) content, the back to its full data.
+    inner.style.height = `${inner.offsetHeight}px`;
+    void inner.offsetHeight; // reflow so the start height "sticks" for the transition
+
+    flipEl.classList.toggle("is-flipped", flipped);
+    front.setAttribute("aria-hidden", String(flipped));
+    back.setAttribute("aria-hidden", String(!flipped));
+
+    if (flipped) {
+      this.#loadOrbital(flipEl);
+      inner.style.height = `${back.scrollHeight}px`;
+      back.querySelector("[data-action='unflip']")?.focus();
+    } else {
+      inner.style.height = `${front.scrollHeight}px`;
+      front.querySelector("[data-action='flip']")?.focus();
+      // Once shrunk, release the fixed height so hover can grow the front again.
+      this.#timers.set(flipEl, setTimeout(() => (inner.style.height = ""), 500));
+    }
+  }
+
+  /** Fetch extra orbital data for the back face — only once per card. The rows
+   *  are already on screen (reserved in #card), so this only fills in text and
+   *  never changes the card height — the values just fade in when they arrive. */
+  async #loadOrbital(flipEl) {
+    const slot = flipEl.querySelector("[data-orbital]");
+    if (!this.api || !slot || slot.dataset.loaded) return;
+    slot.dataset.loaded = "1";
+
+    let values;
+    try {
+      const { orbital_data: orbit = {} } = await this.api.lookup(flipEl.dataset.id);
+      values = {
+        class: orbit.orbit_class?.orbit_class_type ?? "—",
+        seen: orbit.first_observation_date ?? "—",
+        period: orbit.orbital_period ? `${Math.round(orbit.orbital_period)} d` : "—",
+      };
+    } catch {
+      delete slot.dataset.loaded; // allow a later flip to retry the fetch
+      values = { class: "n/a", seen: "n/a", period: "n/a" };
+    }
+
+    for (const [field, value] of Object.entries(values)) {
+      const dd = slot.querySelector(`[data-field="${field}"]`);
+      if (dd) {
+        dd.textContent = value;
+        dd.classList.remove("pending");
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------- markup -- */
+
   #card(a) {
+    const hazard = a.isHazardous ? "card--hazard" : "";
+    const orbitalSlot = this.api
+      ? `<dl class="card-neo__stats card-neo__stats--orbital" data-orbital>
+           <div><dt>Orbit class</dt><dd data-field="class" class="pending">—</dd></div>
+           <div><dt>First seen</dt><dd data-field="seen" class="pending">—</dd></div>
+           <div><dt>Orbital period</dt><dd data-field="period" class="pending">—</dd></div>
+         </dl>`
+      : "";
+
     return `
-      <article class="card-neo ${a.isHazardous ? "card--hazard" : ""}" data-id="${a.id}" tabindex="0">
-        <header class="card-neo__head">
-          <h3 class="card-neo__name">${a.name}</h3>
-          ${a.isHazardous ? `<span class="badge-hazard">Hazardous</span>` : ""}
-        </header>
+      <div class="flip" data-id="${a.id}">
+        <div class="flip__inner">
+          <article class="card-neo flip__face flip__front ${hazard}">
+            <header class="card-neo__head">
+              <h3 class="card-neo__name">${a.name}</h3>
+              ${a.isHazardous ? `<span class="badge-hazard">Hazardous</span>` : ""}
+            </header>
+            <dl class="card-neo__stats">
+              <div><dt>Diameter</dt><dd>${this.#fmt(a.diameterMeters)} m</dd></div>
+              <div><dt>Miss dist.</dt><dd>${a.missDistanceLunar.toFixed(1)} LD</dd></div>
+              <div><dt>Speed</dt><dd>${this.#fmt(a.velocityKmh)} km/h</dd></div>
+              <div><dt>Approach</dt><dd>${a.approachDate}</dd></div>
+            </dl>
+            <div class="card-neo__reveal">
+              <span class="meter-label">Danger index: ${a.dangerScore}/100</span>
+              <div class="meter"><span class="meter__bar" style="--val:${a.dangerScore}%"></span></div>
+              <button type="button" class="btn btn-sm btn-light card-neo__details" data-action="flip">
+                View details ↻
+              </button>
+            </div>
+          </article>
 
-        <dl class="card-neo__stats">
-          <div><dt>Diameter</dt><dd>${this.#fmt(a.diameterMeters)} m</dd></div>
-          <div><dt>Miss dist.</dt><dd>${a.missDistanceLunar.toFixed(1)} LD</dd></div>
-          <div><dt>Speed</dt><dd>${this.#fmt(a.velocityKmh)} km/h</dd></div>
-          <div><dt>Approach</dt><dd>${a.approachDate}</dd></div>
-        </dl>
-
-        <div class="card-neo__reveal">
-          <span class="meter-label">Danger index: ${a.dangerScore}/100</span>
-          <div class="meter"><span class="meter__bar" style="--val:${a.dangerScore}%"></span></div>
-          <button class="btn btn-sm btn-light card-neo__details" data-id="${a.id}">View details</button>
+          <article class="card-neo flip__face flip__back ${hazard}" aria-hidden="true">
+            <header class="card-neo__head">
+              <h3 class="card-neo__name">${a.name}</h3>
+              <button type="button" class="flip__close" data-action="unflip" aria-label="Flip back">↩</button>
+            </header>
+            <dl class="card-neo__stats">
+              <div><dt>Hazardous</dt><dd>${a.isHazardous ? "Yes" : "No"}</dd></div>
+              <div><dt>Diameter</dt><dd>${this.#fmt(a.diameterMeters)} m</dd></div>
+              <div><dt>Miss (km)</dt><dd>${this.#fmt(a.missDistanceKm)}</dd></div>
+              <div><dt>Miss (LD)</dt><dd>${a.missDistanceLunar.toFixed(1)}</dd></div>
+              <div><dt>Speed</dt><dd>${this.#fmt(a.velocityKmh)} km/h</dd></div>
+              <div><dt>Approach</dt><dd>${a.approachDate}</dd></div>
+            </dl>
+            ${orbitalSlot}
+            <a class="btn btn-sm btn-outline-light mt-auto" href="${a.jplUrl}" target="_blank" rel="noopener">
+              NASA JPL page ↗
+            </a>
+          </article>
         </div>
-      </article>`;
+      </div>`;
   }
 
   #fmt(n) {

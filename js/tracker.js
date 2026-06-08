@@ -28,9 +28,8 @@ export class TrackerPage {
       grid: document.querySelector("#grid"),
       pager: document.querySelector("#pager"),
       count: document.querySelector("#resultCount"),
-      modal: document.querySelector("#detailModal"),
     };
-    this.grid = new CardGrid(this.els.grid);
+    this.grid = new CardGrid(this.els.grid, { api: this.api });
   }
 
   init() {
@@ -63,11 +62,10 @@ export class TrackerPage {
     this.els.hazard.addEventListener("change", () => this.#refresh());
     this.els.sort.addEventListener("change", () => this.#refresh());
 
-    // Delegated clicks inside the grid: retry button + "View details".
+    // Delegated clicks inside the grid: retry button only — the card flip is
+    // handled internally by CardGrid.
     this.els.grid.addEventListener("click", (e) => {
-      if (e.target.matches("[data-retry]")) return this.load();
-      const detailsBtn = e.target.closest(".card-neo__details");
-      if (detailsBtn) this.#openModal(detailsBtn.dataset.id);
+      if (e.target.matches("[data-retry]")) this.load();
     });
 
     // Pagination.
@@ -153,36 +151,6 @@ export class TrackerPage {
     this.els.pager.innerHTML = html;
   }
 
-  async #openModal(id) {
-    const asteroid = this.all.find((a) => a.id === id);
-    const title = this.els.modal.querySelector(".modal-title");
-    const body = this.els.modal.querySelector(".modal-body");
-
-    title.textContent = asteroid ? asteroid.name : "Asteroid";
-    body.innerHTML = `<p class="text-secondary">Loading details…</p>`;
-    bootstrap.Modal.getOrCreateInstance(this.els.modal).show();
-
-    try {
-      const data = await this.api.lookup(id);
-      const orbit = data.orbital_data ?? {};
-      body.innerHTML = `
-        <dl class="modal-stats">
-          <div><dt>Potentially hazardous</dt><dd>${asteroid.isHazardous ? "Yes" : "No"}</dd></div>
-          <div><dt>Diameter (avg)</dt><dd>${Math.round(asteroid.diameterMeters).toLocaleString()} m</dd></div>
-          <div><dt>Closest miss</dt><dd>${asteroid.missDistanceLunar.toFixed(2)} LD</dd></div>
-          <div><dt>Relative speed</dt><dd>${Math.round(asteroid.velocityKmh).toLocaleString()} km/h</dd></div>
-          <div><dt>Orbiting body</dt><dd>${asteroid.closestApproach?.orbiting_body ?? "—"}</dd></div>
-          <div><dt>Orbit class</dt><dd>${orbit.orbit_class?.orbit_class_type ?? "—"}</dd></div>
-          <div><dt>First observed</dt><dd>${orbit.first_observation_date ?? "—"}</dd></div>
-          <div><dt>Orbital period</dt><dd>${orbit.orbital_period ? `${Math.round(orbit.orbital_period)} days` : "—"}</dd></div>
-        </dl>
-        <a class="btn btn-outline-light btn-sm" href="${asteroid.jplUrl}" target="_blank" rel="noopener">
-          Open NASA JPL Small-Body page ↗
-        </a>`;
-    } catch (err) {
-      body.innerHTML = `<p class="text-danger">${err.message}</p>`;
-    }
-  }
 }
 
 new TrackerPage().init();

@@ -9,7 +9,7 @@ import { CardGrid } from "./card-grid.js";
 class HomePage {
   constructor() {
     this.api = new NeoApi();
-    this.grid = new CardGrid(document.querySelector("#featuredGrid"));
+    this.grid = new CardGrid(document.querySelector("#featuredGrid"), { api: this.api });
 
     // Bound once so the retry button inside an error state works.
     this.grid.container.addEventListener("click", (e) => {
