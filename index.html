@@ -16,7 +16,7 @@
   </head>
   <body>
     <!-- Consistent navigation bar (shared across all pages) -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-md sticky-top">
       <div class="container container-narrow">
         <a class="navbar-brand" href="index.html">☄️ NEOWatch</a>
         <button
@@ -46,20 +46,25 @@
       </div>
     </nav>
 
-    <main class="container container-narrow">
-      <!-- Hero -->
-      <header class="hero">
-        <h1>Watch the skies in real time</h1>
-        <p>
+    <!-- Cinematic hero backed by NASA's Astronomy Picture of the Day -->
+    <header class="hero">
+      <div class="hero__img" id="heroImg"></div>
+      <div class="hero__overlay"></div>
+      <div class="hero__content container container-narrow">
+        <h1 class="hero__title">Watch the skies in real time</h1>
+        <p class="hero__lead">
           NEOWatch pulls live data from NASA's Near-Earth Object Web Service to show
           which asteroids are sweeping past Earth — how big, how fast, and how close.
         </p>
-        <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <div class="hero__cta d-flex gap-2 justify-content-center flex-wrap">
           <a href="tracker.html" class="btn btn-info btn-lg">Open Live Tracker</a>
           <a href="notable.html" class="btn btn-outline-light btn-lg">Notable Asteroids</a>
         </div>
-      </header>
+      </div>
+      <div class="hero__credit" id="apodCredit" hidden></div>
+    </header>
 
+    <main class="container container-narrow">
       <!-- Live preview: today's closest approaches -->
       <section class="section">
         <h2 class="section-title">Closest approaches today</h2>

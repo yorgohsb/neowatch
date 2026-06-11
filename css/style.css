@@ -124,24 +124,95 @@ a {
 }
 
 /* ------------------------------------------------------------------- Hero -- */
+/* Cinematic hero: a full-bleed NASA "Astronomy Picture of the Day" image with a
+   gradient overlay for text contrast. The image is set by js/home.js and fades
+   in; if APOD is unavailable the themed galaxy background simply shows through. */
 .hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 5rem 1rem 3.5rem;
+  padding: 6rem 1rem 4.5rem;
+  overflow: hidden;
 }
-.hero h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+.hero__img,
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.hero__img {
+  background: center / cover no-repeat;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 1.2s ease, transform 9s ease-out;
+}
+.hero__img.is-loaded {
+  opacity: 1;
+  transform: scale(1); /* slow "Ken Burns" zoom as it fades in */
+}
+.hero__overlay {
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(10, 6, 19, 0.25), rgba(10, 6, 19, 0.8) 95%),
+    linear-gradient(180deg, rgba(10, 6, 19, 0.55) 0%, rgba(10, 6, 19, 0.15) 45%, rgba(10, 6, 19, 0.96) 100%);
+}
+.hero__content {
+  position: relative;
+  z-index: 1;
+}
+.hero__title {
+  font-size: clamp(2.2rem, 6vw, 4rem);
   font-weight: 800;
-  line-height: 1.1;
-  background: linear-gradient(90deg, #fff, var(--accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  line-height: 1.08;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
 }
-.hero p {
+.hero__lead {
   max-width: 640px;
   margin: 1.25rem auto 2rem;
+  color: #e6e9f2;
+  font-size: 1.15rem;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7);
+}
+
+/* APOD caption pinned to the corner of the hero */
+.hero__credit {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1;
+  max-width: min(340px, 82vw);
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  font-size: 0.76rem;
+  line-height: 1.5;
   color: var(--muted);
-  font-size: 1.1rem;
+  background: rgba(10, 6, 19, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+.hero__credit > * {
+  display: block;
+}
+.hero__credit strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.hero__credit a {
+  margin-top: 0.2rem;
+  color: var(--accent);
+}
+.apod-tag {
+  margin-bottom: 0.15rem;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .section {
@@ -294,11 +365,6 @@ a {
   font-size: 1.05rem;
   font-weight: 700;
 }
-.card-neo__aka {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
 
 .card-neo__stats {
   display: grid;
@@ -330,12 +396,6 @@ a {
   max-height: 220px;
   opacity: 1;
   transform: translateY(0);
-}
-.card-neo__reveal--text p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--muted);
-  line-height: 1.5;
 }
 
 /* Animated danger meter inside the reveal panel */
@@ -396,23 +456,151 @@ a {
 }
 
 /* ----------------------------------------------------------------- Badges -- */
-.badge-hazard,
-.badge-cat {
+.badge-hazard {
   padding: 0.15rem 0.5rem;
   border-radius: 99px;
   font-size: 0.7rem;
   font-weight: 600;
   white-space: nowrap;
-}
-.badge-hazard {
   background: rgba(255, 90, 90, 0.15);
   color: var(--danger);
   border: 1px solid rgba(255, 90, 90, 0.4);
 }
-.badge-cat {
-  background: rgba(94, 200, 255, 0.12);
+
+/* --------------------------------------------- Editorial spotlights (Notable) */
+.spotlights {
+  display: flex;
+  flex-direction: column;
+}
+.spotlight {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 3rem 0;
+  border-top: 1px solid var(--line);
+}
+.spotlight:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.spotlight:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+/* Cosmic "orb" standing in for a photo (category-tinted) */
+.spotlight__visual {
+  position: relative;
+  flex: none;
+  width: 230px;
+  height: 230px;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(176, 140, 255, 0.55), transparent 60%),
+    radial-gradient(circle at 72% 75%, rgba(94, 200, 255, 0.28), transparent 55%),
+    radial-gradient(circle at 50% 50%, #1b1136, #0c0820 70%);
+  box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.65), 0 14px 45px rgba(124, 58, 237, 0.22);
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.spotlight:hover .spotlight__visual {
+  transform: scale(1.04);
+  box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.6), 0 18px 55px rgba(124, 58, 237, 0.35);
+}
+.spotlight--hazard .spotlight__visual {
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 120, 120, 0.5), transparent 60%),
+    radial-gradient(circle at 72% 75%, rgba(255, 90, 90, 0.22), transparent 55%),
+    radial-gradient(circle at 50% 50%, #2a1020, #0c0820 70%);
+  box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.65), 0 14px 45px rgba(255, 70, 70, 0.22);
+}
+.spotlight__index {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.95rem;
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.08);
+}
+.spotlight__glyph {
+  font-size: 3.2rem;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5));
+}
+
+.spotlight__body {
+  flex: 1;
+  min-width: 0;
+}
+.spotlight__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--accent);
-  border: 1px solid var(--accent-dim);
+}
+.spotlight--hazard .spotlight__eyebrow {
+  color: #ffb4b4;
+}
+.spotlight__flag {
+  color: var(--danger);
+}
+.spotlight__name {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.spotlight__aka {
+  margin: 0.1rem 0 0.9rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.spotlight__blurb {
+  margin: 0 0 1.1rem;
+  max-width: 60ch;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: #d7dbe8;
+}
+.spotlight__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  margin: 0;
+}
+.spotlight__facts dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.spotlight__facts dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 640px) {
+  .spotlight,
+  .spotlight:nth-child(even) {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2.25rem 0;
+  }
+  .spotlight__visual {
+    width: 160px;
+    height: 160px;
+  }
+  .spotlight__blurb {
+    margin-inline: auto;
+  }
+  .spotlight__facts {
+    justify-content: center;
+  }
 }
 
 /* ------------------------------------------------- Filters / tracker bar -- */
@@ -499,7 +687,13 @@ a {
 /* ------------------------------------------------------------ Responsive -- */
 @media (max-width: 480px) {
   .hero {
-    padding: 3.5rem 1rem 2.5rem;
+    min-height: 70vh;
+    padding: 4rem 1rem 3rem;
+  }
+  .hero__credit {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
   }
   .card-grid {
     grid-template-columns: 1fr;

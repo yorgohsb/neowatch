@@ -1,13 +1,24 @@
 import { NOTABLE } from "./data/notable.js";
 
 /**
- * Renders the curated "Notable Asteroids" dataset into the card grid, with
- * client-side search and category filtering. Reuses the same .card-neo styling
- * as the live tracker so the card-grid + hover requirement is shown off twice.
+ * Notable Asteroids page — an editorial "spotlight" layout: each curated object
+ * gets its own full-width band (catalog number + cosmic orb + story), with
+ * client-side search and category filtering over the dataset.
  */
 class NotablePage {
+  #glyphs = {
+    "Impact event": "💥",
+    "Mission target": "🛰️",
+    "Close approacher": "☄️",
+    "Record-breaker": "⭐",
+  };
+
   constructor() {
-    this.container = document.querySelector("#notableGrid");
+    // Tag each item with a stable, zero-padded catalog number.
+    this.items = NOTABLE.map((item, i) => ({ ...item, no: String(i + 1).padStart(2, "0") }));
+
+    this.list = document.querySelector("#notableList");
+    this.count = document.querySelector("#notableCount");
     this.search = document.querySelector("#notableSearch");
     this.filter = document.querySelector("#categoryFilter");
 
@@ -15,13 +26,13 @@ class NotablePage {
     this.search.addEventListener("input", update);
     this.filter.addEventListener("change", update);
 
-    this.render(NOTABLE);
+    this.render(this.items);
   }
 
   #apply() {
     const query = this.search.value.trim().toLowerCase();
     const category = this.filter.value;
-    return NOTABLE.filter((item) => {
+    return this.items.filter((item) => {
       const haystack = `${item.name} ${item.aka} ${item.blurb}`.toLowerCase();
       const matchesText = haystack.includes(query);
       const matchesCategory = category === "all" || item.category === category;
@@ -30,33 +41,39 @@ class NotablePage {
   }
 
   render(items) {
+    this.count.textContent = `${items.length} of ${this.items.length} objects`;
+
     if (!items.length) {
-      this.container.innerHTML = `
+      this.list.innerHTML = `
         <div class="grid-state grid-state--empty">
           <span class="grid-state__icon">🔭</span>
           <p>No notable asteroids match your search.</p>
         </div>`;
       return;
     }
-    this.container.innerHTML = items.map((item) => this.#card(item)).join("");
+    this.list.innerHTML = items.map((item) => this.#spotlight(item)).join("");
   }
 
-  #card(item) {
+  #spotlight(item) {
+    const glyph = this.#glyphs[item.category] ?? "🪨";
+    const flag = item.hazardous
+      ? ` · <span class="spotlight__flag">Potentially hazardous</span>`
+      : "";
     return `
-      <article class="card-neo ${item.hazardous ? "card--hazard" : ""}" tabindex="0">
-        <header class="card-neo__head">
-          <h3 class="card-neo__name">${item.name}</h3>
-          <span class="badge-cat">${item.category}</span>
-        </header>
-        <p class="card-neo__aka">${item.aka}</p>
-
-        <dl class="card-neo__stats">
-          <div><dt>Size</dt><dd>${item.size}</dd></div>
-          <div><dt>Highlight</dt><dd>${item.highlight}</dd></div>
-        </dl>
-
-        <div class="card-neo__reveal card-neo__reveal--text">
-          <p>${item.blurb}</p>
+      <article class="spotlight ${item.hazardous ? "spotlight--hazard" : ""}">
+        <div class="spotlight__visual" aria-hidden="true">
+          <span class="spotlight__index">${item.no}</span>
+          <span class="spotlight__glyph">${glyph}</span>
+        </div>
+        <div class="spotlight__body">
+          <p class="spotlight__eyebrow">${item.category}${flag}</p>
+          <h2 class="spotlight__name">${item.name}</h2>
+          <p class="spotlight__aka">${item.aka}</p>
+          <p class="spotlight__blurb">${item.blurb}</p>
+          <dl class="spotlight__facts">
+            <div><dt>Size</dt><dd>${item.size}</dd></div>
+            <div><dt>Highlight</dt><dd>${item.highlight}</dd></div>
+          </dl>
         </div>
       </article>`;
   }
