@@ -66,7 +66,9 @@
               <option value="size:desc">Largest first</option>
               <option value="size:asc">Smallest first</option>
               <option value="speed:desc">Fastest first</option>
+              <option value="speed:asc">Slowest first</option>
               <option value="danger:desc">Highest danger index</option>
+              <option value="danger:asc">Lowest danger index</option>
             </select>
           </div>
           <div class="col-12 col-md-3">
@@ -81,21 +83,32 @@
               placeholder="e.g. Apophis, or 2024"
             />
           </div>
-          <div class="col-12 col-md-4 d-flex align-items-end">
-            <div class="form-check form-switch pb-2">
+          <div class="col-12 col-md-4 d-flex flex-column justify-content-end gap-1">
+            <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="hazardOnly" />
               <label class="form-check-label" for="hazardOnly">Potentially hazardous only</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="watchOnly" />
+              <label class="form-check-label" for="watchOnly">⭐ Watchlist only</label>
             </div>
           </div>
         </div>
       </form>
 
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h2 class="h5 m-0">Results</h2>
-        <span id="resultCount" class="text-secondary"></span>
+        <div class="d-flex align-items-center gap-3">
+          <span id="resultCount" class="text-secondary"></span>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Switch result view">
+            <button type="button" id="viewCards" class="btn btn-outline-light" aria-pressed="true">▦ Cards</button>
+            <button type="button" id="viewTable" class="btn btn-outline-light" aria-pressed="false">☰ Table</button>
+          </div>
+        </div>
       </div>
 
       <div id="grid" class="card-grid"></div>
+      <div id="tableWrap" class="table-wrap" hidden></div>
       <nav id="pager" class="pager" aria-label="Pagination"></nav>
     </main>
 

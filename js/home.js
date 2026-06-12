@@ -2,6 +2,7 @@ import { NeoApi } from "./api.js";
 import { ApodApi } from "./apod.js";
 import { Asteroid } from "./models.js";
 import { CardGrid } from "./card-grid.js";
+import { Watchlist } from "./watchlist.js";
 
 /**
  * Home page: a cinematic APOD hero plus a live preview of the closest asteroid
@@ -11,7 +12,10 @@ class HomePage {
   constructor() {
     this.api = new NeoApi();
     this.apod = new ApodApi();
-    this.grid = new CardGrid(document.querySelector("#featuredGrid"), { api: this.api });
+    this.grid = new CardGrid(document.querySelector("#featuredGrid"), {
+      api: this.api,
+      watchlist: new Watchlist(),
+    });
 
     // Bound once so the retry button inside an error state works.
     this.grid.container.addEventListener("click", (e) => {

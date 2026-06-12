@@ -48,6 +48,28 @@ export class Asteroid {
   }
 
   /**
+   * Translates the abstract diameter into a tangible, real-world comparison,
+   * e.g. "≈ 2.4× the Eiffel Tower" — picked from the nearest familiar anchor.
+   */
+  get sizeComparison() {
+    const d = this.diameterMeters;
+    const anchors = [
+      { m: 828, label: "the Burj Khalifa" },
+      { m: 330, label: "the Eiffel Tower" },
+      { m: 105, label: "a football pitch" },
+      { m: 25, label: "a blue whale" },
+      { m: 12, label: "a city bus" },
+      { m: 4.5, label: "a family car" },
+    ];
+    const anchor = anchors.find((a) => d >= a.m * 0.75) ?? anchors.at(-1);
+    const ratio = d / anchor.m;
+    if (ratio < 0.6) return `smaller than ${anchor.label}`;
+    if (ratio < 1.25) return `about the size of ${anchor.label}`;
+    const n = ratio >= 10 ? Math.round(ratio) : Math.round(ratio * 10) / 10;
+    return `≈ ${n}× ${anchor.label}`;
+  }
+
+  /**
    * A 0–100 "danger index" used ONLY to drive the UI meter (not an official
    * NASA figure): larger + closer + faster + officially hazardous => higher.
    */

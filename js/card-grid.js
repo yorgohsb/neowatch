@@ -14,11 +14,12 @@ export class CardGrid {
 
   /**
    * @param {HTMLElement} container
-   * @param {{ api?: import("./api.js").NeoApi }} [options]
+   * @param {{ api?: import("./api.js").NeoApi, watchlist?: import("./watchlist.js").Watchlist }} [options]
    */
-  constructor(container, { api = null } = {}) {
+  constructor(container, { api = null, watchlist = null } = {}) {
     this.container = container;
     this.api = api;
+    this.watchlist = watchlist;
     // One delegated listener survives the innerHTML swaps in render().
     this.container.addEventListener("click", (e) => this.#onClick(e));
   }
@@ -54,6 +55,14 @@ export class CardGrid {
   /* ------------------------------------------------------------ flip logic -- */
 
   #onClick(e) {
+    const star = e.target.closest("[data-action='star']");
+    if (star && this.watchlist) {
+      const watched = this.watchlist.toggle(star.closest(".flip").dataset.id);
+      star.classList.toggle("is-on", watched);
+      star.setAttribute("aria-pressed", String(watched));
+      star.textContent = watched ? "★" : "☆";
+      return;
+    }
     const flipBtn = e.target.closest("[data-action='flip']");
     if (flipBtn) return this.#setFlipped(flipBtn.closest(".flip"), true);
     const backBtn = e.target.closest("[data-action='unflip']");
@@ -131,13 +140,22 @@ export class CardGrid {
          </dl>`
       : "";
 
+    const watched = this.watchlist?.has(a.id);
+    const star = this.watchlist
+      ? `<button type="button" class="star-btn ${watched ? "is-on" : ""}" data-action="star"
+           aria-pressed="${watched}" aria-label="Toggle watchlist" title="Watchlist">${watched ? "★" : "☆"}</button>`
+      : "";
+
     return `
       <div class="flip" data-id="${a.id}">
         <div class="flip__inner">
           <article class="card-neo flip__face flip__front ${hazard}">
             <header class="card-neo__head">
               <h3 class="card-neo__name">${a.name}</h3>
-              ${a.isHazardous ? `<span class="badge-hazard">Hazardous</span>` : ""}
+              <div class="card-neo__tools">
+                ${a.isHazardous ? `<span class="badge-hazard">Hazardous</span>` : ""}
+                ${star}
+              </div>
             </header>
             <dl class="card-neo__stats">
               <div><dt>Diameter</dt><dd>${this.#fmt(a.diameterMeters)} m</dd></div>
@@ -145,6 +163,7 @@ export class CardGrid {
               <div><dt>Speed</dt><dd>${this.#fmt(a.velocityKmh)} km/h</dd></div>
               <div><dt>Approach</dt><dd>${a.approachDate}</dd></div>
             </dl>
+            <p class="card-neo__compare">📏 ${a.sizeComparison}</p>
             <div class="card-neo__reveal">
               <span class="meter-label">Danger index: ${a.dangerScore}/100</span>
               <div class="meter"><span class="meter__bar" style="--val:${a.dangerScore}%"></span></div>
