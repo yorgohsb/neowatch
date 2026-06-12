@@ -11,7 +11,7 @@
     />
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body>
+  <body data-page="tracker">
     <nav class="navbar navbar-expand-md sticky-top">
       <div class="container container-narrow">
         <a class="navbar-brand" href="index.html">☄️ NEOWatch</a>
@@ -95,6 +95,16 @@
           </div>
         </div>
       </form>
+
+      <!-- Mission-control summary of the loaded window -->
+      <section id="statsBar" class="stats-bar" aria-label="Window summary" hidden></section>
+
+      <!-- Approaches-per-day chart (hand-drawn on a canvas, no library) -->
+      <section id="chartPanel" class="chart-panel" hidden>
+        <h2 class="h6 chart-panel__title">Approaches per day <small>(reflects your filters)</small></h2>
+        <canvas id="approachChart" height="170" role="img"
+          aria-label="Bar chart of close approaches per day"></canvas>
+      </section>
 
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h2 class="h5 m-0">Results</h2>

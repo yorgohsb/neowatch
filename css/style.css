@@ -25,6 +25,29 @@
   display: none !important;
 }
 
+/* ------------------------------------------------------ Per-page accents -- */
+/* Each page keeps the shared galaxy backdrop but gets its own accent hue:
+   Home stays violet (the :root default), the Tracker goes data-blue, and the
+   Notable gallery gets a warm museum gold. Everything driven by var(--accent)
+   (links, eyebrows, glows, hover borders, the chart) follows automatically. */
+body[data-page="tracker"] {
+  --accent: #5ec8ff;
+  --accent-dim: rgba(94, 200, 255, 0.4);
+}
+body[data-page="tracker"] .btn-info {
+  --bs-btn-bg: #0284c7;
+  --bs-btn-border-color: #0284c7;
+  --bs-btn-hover-bg: #0369a1;
+  --bs-btn-hover-border-color: #0369a1;
+  --bs-btn-active-bg: #0369a1;
+  --bs-btn-active-border-color: #075985;
+  --bs-btn-focus-shadow-rgb: 2, 132, 199;
+}
+body[data-page="notable"] {
+  --accent: #f3c577;
+  --accent-dim: rgba(243, 197, 119, 0.4);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -500,13 +523,14 @@ a {
   border-top: 1px dashed var(--line);
 }
 
-/* Back-face close-approach mini-timeline. min-height reserves the rows'
-   space up front so the card never resizes when the data arrives. */
+/* Back-face close-approach mini-timeline. min-height reserves the typical
+   4-row footprint up front (label ~1.3rem + 4 × ~1.4rem rows + divider), and
+   CardGrid re-measures the card after the rows load to absorb any difference. */
 .card-neo__history {
   margin-top: 0.25rem;
   padding-top: 0.5rem;
   border-top: 1px dashed var(--line);
-  min-height: 6.2rem;
+  min-height: 7.5rem;
 }
 .history-label {
   display: block;
@@ -829,6 +853,59 @@ a {
   border-radius: 16px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
+}
+
+/* ------------------------------------------- Mission-control stats tiles -- */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.stat__value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.stat__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stat--hazard .stat__value {
+  color: var(--danger);
+}
+
+/* ------------------------------------------------------ Chart panel -- */
+.chart-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1rem 1.25rem 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.chart-panel__title {
+  margin-bottom: 0.75rem;
+}
+.chart-panel__title small {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+#approachChart {
+  display: block;
+  width: 100%;
+  height: 170px;
 }
 
 /* -------------------------------------------------------- Loading / states */

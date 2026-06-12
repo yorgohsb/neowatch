@@ -145,6 +145,14 @@ export class CardGrid {
         ? this.#historyRows(approaches)
         : `<li><span>unavailable</span></li>`;
     }
+
+    // The reserved space is an estimate — re-measure now that the real rows
+    // are in, so the card grows (or shrinks) smoothly to fit instead of the
+    // timeline sliding under the JPL button. Only while the back is showing.
+    if (flipEl.classList.contains("is-flipped")) {
+      const inner = flipEl.querySelector(".flip__inner");
+      inner.style.height = `${flipEl.querySelector(".flip__back").scrollHeight}px`;
+    }
   }
 
   /** Compact timeline: the 2 most recent past + 2 next future Earth passes. */

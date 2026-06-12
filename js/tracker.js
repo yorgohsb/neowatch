@@ -3,6 +3,7 @@ import { Asteroid } from "./models.js";
 import { CardGrid } from "./card-grid.js";
 import { TableView } from "./table-view.js";
 import { Watchlist } from "./watchlist.js";
+import { ApproachChart } from "./chart.js";
 
 const VIEW_KEY = "neowatch.view";
 
@@ -39,9 +40,12 @@ export class TrackerPage {
       viewTable: document.querySelector("#viewTable"),
       pager: document.querySelector("#pager"),
       count: document.querySelector("#resultCount"),
+      statsBar: document.querySelector("#statsBar"),
+      chartPanel: document.querySelector("#chartPanel"),
     };
     this.grid = new CardGrid(this.els.grid, { api: this.api, watchlist: this.watchlist });
     this.table = new TableView(this.els.tableWrap, { watchlist: this.watchlist });
+    this.chart = new ApproachChart(document.querySelector("#approachChart"));
   }
 
   init() {
@@ -150,9 +154,12 @@ export class TrackerPage {
     this.#activeRenderer().renderLoading();
     this.els.pager.innerHTML = "";
     this.els.count.textContent = "";
+    this.els.statsBar.hidden = true;
+    this.els.chartPanel.hidden = true;
     try {
       const raw = await this.api.getFeed(this.els.start.value, this.els.end.value);
       this.all = raw.map((r) => new Asteroid(r));
+      this.#renderStats();
       this.#refresh();
     } catch (err) {
       this.lastError = err.message;
@@ -160,10 +167,44 @@ export class TrackerPage {
     }
   }
 
+  /** Mission-control tiles summarising the whole loaded window. */
+  #renderStats() {
+    const list = this.all;
+    if (!list.length) {
+      this.els.statsBar.hidden = true;
+      return;
+    }
+    const hazardous = list.filter((a) => a.isHazardous).length;
+    const closest = list.reduce((m, a) => (a.missDistanceKm < m.missDistanceKm ? a : m));
+    const largest = list.reduce((m, a) => (a.diameterMeters > m.diameterMeters ? a : m));
+    this.els.statsBar.innerHTML = `
+      <div class="stat">
+        <span class="stat__value">${list.length}</span>
+        <span class="stat__label">approaches this window</span>
+      </div>
+      <div class="stat ${hazardous ? "stat--hazard" : ""}">
+        <span class="stat__value">${hazardous}</span>
+        <span class="stat__label">potentially hazardous</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">${closest.missDistanceLunar.toFixed(1)} LD</span>
+        <span class="stat__label">closest miss · ${closest.name}</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">${Math.round(largest.diameterMeters).toLocaleString()} m</span>
+        <span class="stat__label">largest object · ${largest.name}</span>
+      </div>`;
+    this.els.statsBar.hidden = false;
+  }
+
   /** Recompute the filtered view from the current control values. */
   #refresh() {
     this.page = 1;
     this.filtered = this.#applyFilters(this.all);
+    this.els.chartPanel.hidden = !this.filtered.length;
+    if (this.filtered.length) {
+      this.chart.render(this.filtered, this.els.start.value, this.els.end.value);
+    }
     this.#renderPage();
   }
 
