@@ -63,13 +63,16 @@ export class CardGrid {
       star.textContent = watched ? "★" : "☆";
       return;
     }
+    // e.detail === 0 means the click came from the keyboard (Enter/Space) —
+    // only then do we move focus, so mouse users keep pure hover behaviour.
+    const viaKeyboard = e.detail === 0;
     const flipBtn = e.target.closest("[data-action='flip']");
-    if (flipBtn) return this.#setFlipped(flipBtn.closest(".flip"), true);
+    if (flipBtn) return this.#setFlipped(flipBtn.closest(".flip"), true, viaKeyboard);
     const backBtn = e.target.closest("[data-action='unflip']");
-    if (backBtn) return this.#setFlipped(backBtn.closest(".flip"), false);
+    if (backBtn) return this.#setFlipped(backBtn.closest(".flip"), false, viaKeyboard);
   }
 
-  #setFlipped(flipEl, flipped) {
+  #setFlipped(flipEl, flipped, viaKeyboard = false) {
     if (!flipEl) return;
     const inner = flipEl.querySelector(".flip__inner");
     const front = flipEl.querySelector(".flip__front");
@@ -89,31 +92,42 @@ export class CardGrid {
     if (flipped) {
       this.#loadOrbital(flipEl);
       inner.style.height = `${back.scrollHeight}px`;
-      back.querySelector("[data-action='unflip']")?.focus();
+      if (viaKeyboard) back.querySelector("[data-action='unflip']")?.focus();
     } else {
       inner.style.height = `${front.scrollHeight}px`;
-      front.querySelector("[data-action='flip']")?.focus();
+      if (viaKeyboard) {
+        front.querySelector("[data-action='flip']")?.focus();
+      } else if (flipEl.contains(document.activeElement)) {
+        // Drop any click-residue focus so :focus-within doesn't pin the
+        // front's reveal panel open — mouse users collapse on mouse-out.
+        document.activeElement.blur();
+      }
       // Once shrunk, release the fixed height so hover can grow the front again.
       this.#timers.set(flipEl, setTimeout(() => (inner.style.height = ""), 500));
     }
   }
 
-  /** Fetch extra orbital data for the back face — only once per card. The rows
-   *  are already on screen (reserved in #card), so this only fills in text and
-   *  never changes the card height — the values just fade in when they arrive. */
+  /** Fetch extra detail for the back face (orbital data + close-approach
+   *  history) — only once per card. The rows/space are already reserved in
+   *  #card, so this only fills in content and never resizes the card; the
+   *  values just fade in when they arrive. */
   async #loadOrbital(flipEl) {
     const slot = flipEl.querySelector("[data-orbital]");
+    const history = flipEl.querySelector("[data-history]");
     if (!this.api || !slot || slot.dataset.loaded) return;
     slot.dataset.loaded = "1";
 
     let values;
+    let approaches = null;
     try {
-      const { orbital_data: orbit = {} } = await this.api.lookup(flipEl.dataset.id);
+      const data = await this.api.lookup(flipEl.dataset.id);
+      const orbit = data.orbital_data ?? {};
       values = {
         class: orbit.orbit_class?.orbit_class_type ?? "—",
         seen: orbit.first_observation_date ?? "—",
         period: orbit.orbital_period ? `${Math.round(orbit.orbital_period)} d` : "—",
       };
+      approaches = data.close_approach_data ?? [];
     } catch {
       delete slot.dataset.loaded; // allow a later flip to retry the fetch
       values = { class: "n/a", seen: "n/a", period: "n/a" };
@@ -126,6 +140,31 @@ export class CardGrid {
         dd.classList.remove("pending");
       }
     }
+    if (history) {
+      history.innerHTML = approaches
+        ? this.#historyRows(approaches)
+        : `<li><span>unavailable</span></li>`;
+    }
+  }
+
+  /** Compact timeline: the 2 most recent past + 2 next future Earth passes. */
+  #historyRows(approaches) {
+    const today = new Date().toISOString().slice(0, 10);
+    const earth = approaches.filter((c) => c.orbiting_body === "Earth");
+    const past = earth.filter((c) => c.close_approach_date < today).slice(-2);
+    const future = earth.filter((c) => c.close_approach_date >= today).slice(0, 2);
+
+    const rows = [
+      ...past.map((c) => this.#historyRow(c, "is-past")),
+      ...future.map((c, i) => this.#historyRow(c, i === 0 ? "is-next" : "")),
+    ];
+    return rows.length ? rows.join("") : `<li><span>No other Earth passes on record</span></li>`;
+  }
+
+  #historyRow(c, cls) {
+    const ld = Number(c.miss_distance.lunar).toFixed(1);
+    const tag = cls === "is-next" ? `<em>next</em>` : "";
+    return `<li class="${cls}"><span>${c.close_approach_date} ${tag}</span><span>${ld} LD</span></li>`;
   }
 
   /* ---------------------------------------------------------------- markup -- */
@@ -137,7 +176,13 @@ export class CardGrid {
            <div><dt>Orbit class</dt><dd data-field="class" class="pending">—</dd></div>
            <div><dt>First seen</dt><dd data-field="seen" class="pending">—</dd></div>
            <div><dt>Orbital period</dt><dd data-field="period" class="pending">—</dd></div>
-         </dl>`
+         </dl>
+         <div class="card-neo__history">
+           <span class="history-label">Earth close approaches</span>
+           <ul class="history-list" data-history>
+             <li class="pending"><span>loading…</span></li>
+           </ul>
+         </div>`
       : "";
 
     const watched = this.watchlist?.has(a.id);

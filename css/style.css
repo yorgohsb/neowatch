@@ -221,6 +221,66 @@ a {
   text-transform: uppercase;
 }
 
+/* --------------------------------------------------------- Countdown band -- */
+.countdown-band {
+  border-block: 1px solid var(--line);
+  background:
+    radial-gradient(ellipse 60% 120% at 85% 50%, rgba(124, 58, 237, 0.25), transparent 70%),
+    rgba(13, 8, 26, 0.65);
+}
+.countdown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding-block: 2rem;
+}
+.countdown__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.countdown__title {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-weight: 800;
+}
+.countdown__sub {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 48ch;
+}
+.countdown__clock {
+  display: flex;
+  gap: 0.6rem;
+}
+.countdown__clock > div {
+  min-width: 72px;
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.countdown__clock span {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums; /* digits keep width — no jitter each second */
+  color: var(--text);
+}
+.countdown__clock small {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
 .section {
   padding: 1rem 0 3rem;
 }
@@ -438,6 +498,49 @@ a {
   margin-top: 0.25rem;
   padding-top: 0.5rem;
   border-top: 1px dashed var(--line);
+}
+
+/* Back-face close-approach mini-timeline. min-height reserves the rows'
+   space up front so the card never resizes when the data arrives. */
+.card-neo__history {
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--line);
+  min-height: 6.2rem;
+}
+.history-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+}
+.history-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.1rem 0;
+  color: var(--muted);
+}
+.history-list li.is-next {
+  color: var(--accent);
+  font-weight: 600;
+}
+.history-list li em {
+  font-style: normal;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.history-list li.pending {
+  opacity: 0.5;
 }
 /* Values fade in once the lookup resolves; the rows are reserved from the
    start so the card height never changes a second time. */

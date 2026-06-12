@@ -3,6 +3,10 @@ import { ApodApi } from "./apod.js";
 import { Asteroid } from "./models.js";
 import { CardGrid } from "./card-grid.js";
 import { Watchlist } from "./watchlist.js";
+import { Countdown } from "./countdown.js";
+
+// Apophis close approach: 2029-04-13 21:46 UTC (per NASA/JPL).
+const APOPHIS_FLYBY = "2029-04-13T21:46:00Z";
 
 /**
  * Home page: a cinematic APOD hero plus a live preview of the closest asteroid
@@ -26,6 +30,7 @@ class HomePage {
   init() {
     this.#loadApod();
     this.#loadFeatured();
+    new Countdown(document.querySelector("#apophisClock"), APOPHIS_FLYBY).start();
   }
 
   /** Set the hero background to NASA's Astronomy Picture of the Day. */
